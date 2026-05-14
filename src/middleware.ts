@@ -40,12 +40,18 @@ export function middleware(request: NextRequest) {
   const token = request.cookies.get(SESSION_COOKIE)?.value
 
   if (token) {
-    if (isPublic) {
-      // Logged-in user visiting login/register → redirect to dashboard
+    // Basic format validation: real tokens are 96 hex chars (crypto.randomBytes(48).toString("hex"))
+    const isValidFormat = /^[0-9a-f]{96}$/.test(token)
+
+    if (isPublic && isValidFormat) {
       return NextResponse.redirect(new URL("/dashboard", request.url))
     }
-    // Has a session cookie → let through (route handler validates session)
-    return NextResponse.next()
+
+    if (isValidFormat) {
+      return NextResponse.next()
+    }
+
+    // Invalid token format → treat as unauthenticated
   }
 
   if (isPublic) return NextResponse.next()

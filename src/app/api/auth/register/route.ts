@@ -25,9 +25,19 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
+
+    // Origin check — CSRF defense layer
+    const origin = request.headers.get("origin")
+    const referer = request.headers.get("referer")
+    if (origin && !origin.includes("enjaz.one") && !origin.includes("localhost")) {
+      return NextResponse.json({ error: "غير مصرح" }, { status: 403 })
+    }
+    if (!origin && referer && !referer.includes("enjaz.one") && !referer.includes("localhost")) {
+      return NextResponse.json({ error: "غير مصرح" }, { status: 403 })
+    }
+
     const csrfHeader = request.headers.get("x-csrf-token")
     const csrfToken = body._csrf || csrfHeader
-
     const cookieStore = await import("next/headers").then((m) => m.cookies())
     const csrfCookie = cookieStore.get("csrf-token")
 
