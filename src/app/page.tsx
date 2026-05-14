@@ -126,17 +126,20 @@ export default function LandingPage() {
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/90 backdrop-blur-md">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <Link href="/" className="flex items-center gap-3">
+            <Link href="/" className="flex items-center gap-3 shrink-0">
               <img src="/brand/enjaz-icon.png" alt="ENJAZ" className="w-12 h-12 object-contain" />
               <span className="font-bold text-xl">ENJAZ</span>
             </Link>
 
-            <div className="hidden md:flex items-center gap-6">
+            <div className="hidden md:flex items-center justify-center flex-1 gap-6">
               {NAV_LINKS.map((link) => (
                 <a key={link.href} href={link.href} className="text-sm text-muted hover:text-foreground transition-colors">
                   {link.label}
                 </a>
               ))}
+            </div>
+
+            <div className="hidden md:flex items-center gap-3 shrink-0">
               <button onClick={toggle} className="p-2 rounded-lg text-muted hover:text-foreground hover:bg-card-hover transition-all" aria-label="Toggle theme">
                 {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
               </button>
