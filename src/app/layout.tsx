@@ -15,17 +15,29 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "ENJAZ - نظام إدارة المتاجر",
-  description: "نظام متكامل لإدارة وتشغيل المتاجر ونقاط البيع",
+  title: "ENJAZ - نظام إدارة المتاجر ونقطة البيع",
+  description: "ENJAZ منصة عربية لإدارة المتاجر تشمل نقطة بيع، مخزون، موظفين، فواتير، تقارير، وAI Agent للرؤى التشغيلية.",
+  keywords: ["نظام إدارة متجر", "نقطة بيع", "برنامج كاشير", "إدارة مخزون", "POS عربي", "فواتير", "ENJAZ", "محل"],
   icons: {
     icon: "/logo.png",
     apple: "/logo.png",
   },
   openGraph: {
-    title: "ENJAZ - نظام إدارة المتاجر",
-    description: "نظام متكامل لإدارة وتشغيل المتاجر ونقاط البيع",
+    title: "ENJAZ - نظام إدارة المتاجر ونقطة البيع",
+    description: "منصة عربية لإدارة المتاجر — نقطة بيع، مخزون، موظفين، فواتير، تقارير، وAI Agent.",
     images: ["/logo.png"],
+    url: "https://enjaz.one",
+    type: "website",
+    locale: "ar_SA",
+    siteName: "ENJAZ",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "ENJAZ - نظام إدارة المتاجر ونقطة البيع",
+    description: "منصة عربية لإدارة المتاجر — نقطة بيع، مخزون، موظفين، فواتير، تقارير، وAI Agent.",
+  },
+  robots: { index: true, follow: true },
+  alternates: { canonical: "https://enjaz.one" },
 }
 
 export default function RootLayout({
