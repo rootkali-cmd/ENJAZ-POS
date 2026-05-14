@@ -571,7 +571,7 @@ export default function LandingPage() {
           <div className="border-t border-border pt-5 flex flex-col sm:flex-row items-center justify-between gap-3">
             <p className="text-xs text-muted text-center sm:text-right">
               © {new Date().getFullYear()} ENJAZ. كل الحقوق محفوظة. |{" "}
-              <a href="mailto:contact@enjaz.one" className="hover:text-foreground transition-colors">contact@enjaz.one</a>
+              <a href="mailto:support@enjaz.one" className="hover:text-foreground transition-colors">support@enjaz.one</a>
             </p>
             <p className="text-xs text-muted">
               مصمم في مصر
