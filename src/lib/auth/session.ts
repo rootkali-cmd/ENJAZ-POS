@@ -20,12 +20,12 @@ function hashToken(token: string): string {
 
 function getCookieOptions(expiresAt: Date) {
   const secure = process.env.NODE_ENV === "production"
-  return `enjaz_session=TOKEN_PLACEHOLDER; HttpOnly; ${secure ? "Secure; " : ""}SameSite=Lax; Path=/; Expires=${expiresAt.toUTCString()}`
+  return `enjaz_session=TOKEN_PLACEHOLDER; HttpOnly; ${secure ? "Secure; " : ""}SameSite=Strict; Path=/; Expires=${expiresAt.toUTCString()}`
 }
 
 export function buildCookieHeader(token: string, expiresAt: Date): string {
   const secure = process.env.NODE_ENV === "production"
-  return `enjaz_session=${token}; HttpOnly; ${secure ? "Secure; " : ""}SameSite=Lax; Path=/; Expires=${expiresAt.toUTCString()}`
+  return `enjaz_session=${token}; HttpOnly; ${secure ? "Secure; " : ""}SameSite=Strict; Path=/; Expires=${expiresAt.toUTCString()}`
 }
 
 export async function createSession(
@@ -66,7 +66,7 @@ export async function createSession(
     cookieStore.set(SESSION_COOKIE, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: "strict",
       path: "/",
       expires: expiresAt,
     })

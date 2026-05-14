@@ -5,6 +5,7 @@ import { hashPassword } from "@/lib/auth/password"
 import { createSession } from "@/lib/auth/session"
 import { auditLog } from "@/lib/audit"
 import { validateCsrfToken } from "@/lib/csrf"
+import { checkRateLimit, getRateLimitKey } from "@/lib/rate-limit"
 
 const registerSchema = z.object({
   name: z.string().min(1, "الاسم مطلوب"),
@@ -18,6 +19,11 @@ const registerSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = getRateLimitKey(request)
+    if (!checkRateLimit(`register:${ip}`)) {
+      return NextResponse.json({ error: "طلبات كثيرة جداً. حاول بعد دقيقة." }, { status: 429 })
+    }
+
     const body = await request.json()
     const csrfHeader = request.headers.get("x-csrf-token")
     const csrfToken = body._csrf || csrfHeader
@@ -25,7 +31,7 @@ export async function POST(request: NextRequest) {
     const cookieStore = await import("next/headers").then((m) => m.cookies())
     const csrfCookie = cookieStore.get("csrf-token")
 
-    if (csrfToken && csrfCookie && !validateCsrfToken(csrfToken, csrfCookie.value)) {
+    if (csrfCookie && (!csrfToken || !validateCsrfToken(csrfToken, csrfCookie.value))) {
       return NextResponse.json({ error: "طلب غير مصرح به" }, { status: 403 })
     }
 
@@ -40,7 +46,7 @@ export async function POST(request: NextRequest) {
 
     const existing = await prisma.user.findUnique({ where: { email } })
     if (existing) {
-      return NextResponse.json({ error: "البريد الإلكتروني مسجل بالفعل" }, { status: 409 })
+      return NextResponse.json({ error: "تعذر إنشاء الحساب. تأكد من صحة البيانات." }, { status: 400 })
     }
 
     const passwordHash = await hashPassword(password)

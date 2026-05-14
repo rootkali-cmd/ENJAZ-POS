@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://www.enjaz.one/</loc><priority>1.0</priority></url>
+  <url><loc>https://www.enjaz.one/login</loc><priority>0.7</priority></url>
+  <url><loc>https://www.enjaz.one/register</loc><priority>0.7</priority></url>
+  <url><loc>https://www.enjaz.one/faq</loc><priority>0.6</priority></url>
+  <url><loc>https://www.enjaz.one/contact</loc><priority>0.6</priority></url>
+  <url><loc>https://www.enjaz.one/terms</loc><priority>0.5</priority></url>
+  <url><loc>https://www.enjaz.one/privacy</loc><priority>0.5</priority></url>
+</urlset>
