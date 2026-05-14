@@ -27,10 +27,10 @@ const FOOTER_LINKS = {
     { href: "/ai-agent", label: "AI Agent" },
   ],
   "الدعم": [
-    { href: "#", label: "الأسئلة الشائعة" },
-    { href: "#", label: "تواصل معنا" },
-    { href: "#", label: "الشروط والأحكام" },
-    { href: "#", label: "سياسة الخصوصية" },
+    { href: "/faq", label: "الأسئلة الشائعة" },
+    { href: "/contact", label: "تواصل معنا" },
+    { href: "/terms", label: "الشروط والأحكام" },
+    { href: "/privacy", label: "سياسة الخصوصية" },
   ],
 }
 
