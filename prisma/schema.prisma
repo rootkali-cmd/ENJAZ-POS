@@ -1,0 +1,558 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "cockroachdb"
+}
+
+model User {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  name           String?
+  passwordHash   String
+  role           String    @default("owner")
+  emailVerified  Boolean   @default(false)
+  isActive       Boolean   @default(true)
+  lastLoginAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  store    Store?
+  sessions Session[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  userAgent String?
+  ipAddress String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("sessions")
+}
+
+model Store {
+  id          String   @id @default(cuid())
+  name        String
+  activity    String?
+  address     String?
+  phone       String?
+  currency    String   @default("SAR")
+  taxRate     Float    @default(0)
+  taxEnabled  Boolean  @default(false)
+  logo        String?
+  ownerPin    String?
+  ownerId     String   @unique
+  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  isActive    Boolean  @default(true)
+  isBeta      Boolean  @default(true)
+  aiEnabled   Boolean  @default(true)
+  aiDailyLimit Int      @default(10)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  settings        StoreSettings?
+  employees       Employee[]
+  categories      Category[]
+  products        Product[]
+  customers       Customer[]
+  suppliers       Supplier[]
+  sales           Sale[]
+  expenses        Expense[]
+  salaries        Salary[]
+  incentives      Incentive[]
+  auditLogs       AuditLog[]
+  betaFeedback    BetaFeedback[]
+  suspendedSales  SuspendedSale[]
+  aiUsage         AiUsage?
+  aiConversations AiConversation[]
+  aiAgentSnapshots AiAgentSnapshot[]
+  aiAgentActivities AiAgentActivity[]
+  devices           StoreDevice[]
+  deviceEventLogs   DeviceEventLog[]
+
+  @@map("stores")
+}
+
+model StoreSettings {
+  id              String   @id @default(cuid())
+  storeId         String   @unique
+  store           Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  receiptFooter   String?
+  returnPolicy    String?
+  defaultPayment  String   @default("cash")
+  lowStockAlert   Boolean  @default(true)
+  lowStockThreshold Int    @default(5)
+  cashDrawerEnabled Boolean @default(false)
+  cashDrawerRequiresOwnerPin Boolean @default(true)
+  cashDrawerProvider String @default("browser")
+  deviceHelperEnabled Boolean @default(false)
+  deviceHelperUrl String @default("http://localhost:3789")
+  autoDetectDevicesEnabled Boolean @default(true)
+  receiptPrinterPaperSize String @default("80mm")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("store_settings")
+}
+
+model Employee {
+  id          String   @id @default(cuid())
+  storeId     String
+  store       Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  name        String
+  phone       String?
+  email       String?
+  role        String   @default("cashier")
+  password    String?
+  salary      Float    @default(0)
+  salaryType  String   @default("monthly")
+  isActive    Boolean  @default(true)
+  canGiveDiscount Boolean @default(false)
+  canProcessReturns Boolean @default(false)
+  canAccessProtected Boolean @default(false)
+  permissions String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  sales           Sale[]
+  expenses        Expense[]
+  salaries        Salary[]
+  salaryPayments  SalaryPayment[]
+  incentives      Incentive[]
+
+  @@map("employees")
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  storeId   String
+  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  name      String
+  color     String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id              String   @id @default(cuid())
+  storeId         String
+  store           Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  name            String
+  description     String?
+  sku             String?
+  price           Float    @default(0)
+  costPrice       Float    @default(0)
+  quantity        Int      @default(0)
+  lowStockThreshold Int    @default(5)
+  image           String?
+  isActive        Boolean  @default(true)
+  categoryId      String?
+  category        Category? @relation(fields: [categoryId], references: [id])
+  supplierId      String?
+  supplier        Supplier? @relation(fields: [supplierId], references: [id])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  barcodes          ProductBarcode[]
+  saleItems         SaleItem[]
+  inventoryMovements InventoryMovement[]
+
+  @@index([storeId])
+  @@index([sku])
+  @@index([categoryId])
+  @@map("products")
+}
+
+model ProductBarcode {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  barcode   String
+  isPrimary Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@unique([productId, barcode])
+  @@index([barcode])
+  @@map("product_barcodes")
+}
+
+model InventoryMovement {
+  id          String   @id @default(cuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  type        String
+  quantity    Int
+  reference   String?
+  notes       String?
+  createdById String?
+  createdAt   DateTime @default(now())
+
+  @@index([productId])
+  @@map("inventory_movements")
+}
+
+model Customer {
+  id          String   @id @default(cuid())
+  storeId     String
+  store       Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  name        String
+  phone       String?
+  address     String?
+  notes       String?
+  totalPurchases Float  @default(0)
+  lastPurchaseAt DateTime?
+  creditAmount  Float  @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  sales Sale[]
+
+  @@index([storeId])
+  @@index([phone])
+  @@map("customers")
+}
+
+model Supplier {
+  id          String   @id @default(cuid())
+  storeId     String
+  store       Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  name        String
+  phone       String?
+  notes       String?
+  totalPaid   Float    @default(0)
+  totalDue    Float    @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  products Product[]
+
+  @@index([storeId])
+  @@map("suppliers")
+}
+
+model Sale {
+  id              String   @id @default(cuid())
+  storeId         String
+  store           Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  invoiceNumber   String   @unique
+  subtotal        Float    @default(0)
+  discount        Float    @default(0)
+  discountType    String   @default("fixed")
+  tax             Float    @default(0)
+  total           Float    @default(0)
+  profit          Float    @default(0)
+  paymentMethod   String   @default("cash")
+  paymentMethods  String?
+  status          String   @default("completed")
+  notes           String?
+  customerId      String?
+  customer        Customer? @relation(fields: [customerId], references: [id])
+  employeeId      String?
+  employee        Employee? @relation(fields: [employeeId], references: [id])
+  createdById     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  items     SaleItem[]
+  payments  Payment[]
+  returns   Return[]
+
+  @@index([storeId])
+  @@index([invoiceNumber])
+  @@index([customerId])
+  @@index([employeeId])
+  @@index([createdAt])
+  @@map("sales")
+}
+
+model SaleItem {
+  id        String   @id @default(cuid())
+  saleId    String
+  sale      Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int      @default(1)
+  price     Float    @default(0)
+  costPrice Float    @default(0)
+  discount  Float    @default(0)
+  total     Float    @default(0)
+
+  @@index([saleId])
+  @@index([productId])
+  @@map("sale_items")
+}
+
+model Payment {
+  id        String   @id @default(cuid())
+  saleId    String
+  sale      Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  method    String
+  amount    Float
+  reference String?
+  createdAt DateTime @default(now())
+
+  @@map("payments")
+}
+
+model Return {
+  id          String   @id @default(cuid())
+  saleId      String
+  sale        Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  items       String?
+  total       Float    @default(0)
+  reason      String?
+  createdById String?
+  createdAt   DateTime @default(now())
+
+  @@map("returns")
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  storeId     String
+  store       Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  category    String
+  amount      Float
+  description String?
+  date        DateTime @default(now())
+  createdById String?
+  employeeId  String?
+  employee    Employee? @relation(fields: [employeeId], references: [id])
+  createdAt   DateTime @default(now())
+
+  @@index([storeId])
+  @@map("expenses")
+}
+
+model Salary {
+  id        String   @id @default(cuid())
+  storeId   String
+  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  employeeId String?
+  employee  Employee? @relation(fields: [employeeId], references: [id])
+  amount    Float
+  month     Int
+  year      Int
+  status    String   @default("pending")
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  payments SalaryPayment[]
+
+  @@index([storeId])
+  @@map("salaries")
+}
+
+model SalaryPayment {
+  id        String   @id @default(cuid())
+  salaryId  String
+  salary    Salary   @relation(fields: [salaryId], references: [id], onDelete: Cascade)
+  amount    Float
+  date      DateTime @default(now())
+  method    String   @default("cash")
+  notes     String?
+  paidById  String?
+  employeeId String?
+  employee  Employee? @relation(fields: [employeeId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@map("salary_payments")
+}
+
+model Incentive {
+  id         String   @id @default(cuid())
+  storeId    String
+  store      Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+  type       String
+  amount     Float
+  reason     String?
+  date       DateTime @default(now())
+  createdById String?
+  createdAt  DateTime @default(now())
+
+  @@index([storeId])
+  @@index([employeeId])
+  @@map("incentives")
+}
+
+model SuspendedSale {
+  id        String   @id @default(cuid())
+  storeId   String
+  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  label     String?
+  data      String
+  createdAt DateTime @default(now())
+
+  @@index([storeId])
+  @@map("suspended_sales")
+}
+
+model AiConversation {
+  id        String   @id @default(cuid())
+  storeId   String
+  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  userId    String
+  title     String   @default("محادثة جديدة")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages AiMessage[]
+
+  @@index([storeId])
+  @@index([updatedAt])
+  @@map("ai_conversations")
+}
+
+model AiUsage {
+  id        String   @id @default(cuid())
+  storeId   String   @unique
+  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  usedToday Int      @default(0)
+  totalUsed Int      @default(0)
+  lastUsedAt DateTime?
+  date      DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("ai_usage")
+}
+
+model AiMessage {
+  id             String          @id @default(cuid())
+  conversationId String
+  conversation   AiConversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  storeId        String
+  userId         String?
+  role           String
+  content        String
+  providerId     String?
+  model          String?
+  tokens         Int?
+  createdAt      DateTime        @default(now())
+
+  @@index([conversationId])
+  @@index([storeId])
+  @@map("ai_messages")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  storeId   String
+  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  action    String
+  entity    String?
+  entityId  String?
+  details   String?
+  userId    String?
+  userType  String   @default("employee")
+  createdAt DateTime @default(now())
+
+  @@index([storeId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model AiAgentSnapshot {
+  id           String   @id @default(cuid())
+  storeId      String
+  store        Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  userId       String
+  payload      Json
+  providerId   String?
+  model        String?
+  fallbackCount Int     @default(0)
+  status       String   @default("completed")
+  createdAt    DateTime @default(now())
+
+  @@index([storeId])
+  @@index([createdAt])
+  @@map("ai_agent_snapshots")
+}
+
+model AiAgentActivity {
+  id        String   @id @default(cuid())
+  storeId   String
+  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  userId    String
+  title     String
+  type      String   @default("summary")
+  status    String   @default("completed")
+  createdAt DateTime @default(now())
+
+  @@index([storeId])
+  @@index([createdAt])
+  @@map("ai_agent_activities")
+}
+
+model BetaFeedback {
+  id        String   @id @default(cuid())
+  storeId   String
+  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  type      String   @default("feedback")
+  message   String
+  contact   String?
+  createdAt DateTime @default(now())
+
+  @@map("beta_feedback")
+}
+
+model StoreDevice {
+  id              String   @id @default(cuid())
+  storeId         String
+  store           Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  name            String
+  type            String   @default("unknown")
+  connectionType  String   @default("manual")
+  status          String   @default("unknown")
+  vendorId        String?
+  productId       String?
+  manufacturer    String?
+  productName     String?
+  serialNumberHash String?
+  capabilities    Json?
+  settings        Json?
+  aiAnalysis      Json?
+  requiresHelper  Boolean  @default(false)
+  lastSeenAt      DateTime?
+  lastTestAt      DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  eventLogs DeviceEventLog[]
+
+  @@index([storeId])
+  @@map("store_devices")
+}
+
+model DeviceEventLog {
+  id        String   @id @default(cuid())
+  storeId   String
+  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  deviceId  String?
+  device    StoreDevice? @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+  eventType String
+  status    String
+  message   String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([storeId])
+  @@index([deviceId])
+  @@index([createdAt])
+  @@map("device_event_logs")
+}
