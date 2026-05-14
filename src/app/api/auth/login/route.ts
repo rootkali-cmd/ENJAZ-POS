@@ -3,11 +3,21 @@ import { prisma } from "@/lib/prisma"
 import { verifyPassword } from "@/lib/auth/password"
 import { createSession } from "@/lib/auth/session"
 import { auditLog } from "@/lib/audit"
+import { validateCsrfToken } from "@/lib/csrf"
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { email, password } = body
+    const { email, password, _csrf } = body
+    const csrfHeader = request.headers.get("x-csrf-token")
+    const csrfToken = _csrf || csrfHeader
+
+    const cookieStore = await import("next/headers").then((m) => m.cookies())
+    const csrfCookie = cookieStore.get("csrf-token")
+
+    if (csrfToken && csrfCookie && !validateCsrfToken(csrfToken, csrfCookie.value)) {
+      return NextResponse.json({ error: "طلب غير مصرح به" }, { status: 403 })
+    }
 
     if (!email || !password) {
       return NextResponse.json(

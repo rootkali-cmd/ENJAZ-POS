@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { hashPassword } from "@/lib/auth/password"
 import { createSession } from "@/lib/auth/session"
 import { auditLog } from "@/lib/audit"
+import { validateCsrfToken } from "@/lib/csrf"
 
 const registerSchema = z.object({
   name: z.string().min(1, "الاسم مطلوب"),
@@ -18,6 +19,16 @@ const registerSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
+    const csrfHeader = request.headers.get("x-csrf-token")
+    const csrfToken = body._csrf || csrfHeader
+
+    const cookieStore = await import("next/headers").then((m) => m.cookies())
+    const csrfCookie = cookieStore.get("csrf-token")
+
+    if (csrfToken && csrfCookie && !validateCsrfToken(csrfToken, csrfCookie.value)) {
+      return NextResponse.json({ error: "طلب غير مصرح به" }, { status: 403 })
+    }
+
     const parsed = registerSchema.safeParse(body)
 
     if (!parsed.success) {
