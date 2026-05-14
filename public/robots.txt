@@ -1,3 +1,18 @@
 User-agent: *
 Allow: /
+Disallow: /dashboard
+Disallow: /pos
+Disallow: /admin
+Disallow: /settings
+Disallow: /products
+Disallow: /sales
+Disallow: /customers
+Disallow: /suppliers
+Disallow: /employees
+Disallow: /expenses
+Disallow: /reports
+Disallow: /onboarding
+Disallow: /api/
+Disallow: /_next/
+
 Sitemap: https://www.enjaz.one/sitemap.xml

@@ -1,0 +1,19 @@
+{
+  "name": "ENJAZ - نظام إدارة المتاجر ونقطة البيع",
+  "short_name": "ENJAZ",
+  "description": "منصة عربية سحابية لإدارة المتاجر — نقطة بيع، مخزون، موظفين، فواتير، تقارير، وAI Agent.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#7c3aed",
+  "dir": "rtl",
+  "lang": "ar",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
